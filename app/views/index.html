@@ -1,0 +1,60 @@
+<script>
+  var wsUrl = '';
+
+  var host = window.location.hostname;
+  var port = window.location.port;
+
+  if (window.location.protocol === 'http:') {
+    wsUrl += 'ws://';
+  } else if (window.location.protocol === 'https:') {
+    wsUrl += 'wss://';
+  }
+
+  wsUrl += host;
+
+  if (port) {
+    wsUrl += ':' + port;
+  }
+
+  var conn = document.getElementsByTagName('body')[0].getAttribute('data-socket-connection-id');
+  wsUrl += '/?socket_connection_id=' + conn;
+
+  console.log('Opening connection with id: ' + conn);
+  window.socket = new WebSocket(wsUrl);
+
+  window.socket.onopen = function (event) {
+    console.log('Socket opened.');
+  };
+
+  var callbacks = {};
+  window.socket.onmessage = function (evt) {
+    var data = JSON.parse(evt.data);
+    console.log('Socket received data.');
+
+    if (data.id) {
+      console.log('Calling callback for message id: ' + data.id);
+      callbacks[data.id].call(this, data);
+    } else {
+      console.log(data);
+    }
+  }
+
+  function sendMessage(message, cb) {
+    message.id = guid();
+    callbacks[message.id] = cb;
+    console.log('Sending message with id: ' + message.id);
+    window.socket.send(JSON.stringify(message));
+  }
+
+  var guid = (function() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+                 .toString(16)
+                 .substring(1);
+    }
+    return function() {
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+             s4() + '-' + s4() + s4() + s4();
+    };
+  })();
+</script>
