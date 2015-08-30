@@ -25,8 +25,6 @@ Pakyow::App.define do
   end
 
   middleware do |builder|
-    builder.use Rack::Session::Cookie,
-      :key => 'ws.session',
-      :secret => 'ae3fe3aacd5e45ffb0865db10522ee6be33c9cb9951547ec90bc6480015141e3'
+    builder.use Rack::Session::Cookie, key: "#{Pakyow::Config.app.name}.session", secret: 'sekret'
   end
 end
